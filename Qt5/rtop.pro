@@ -20,11 +20,10 @@ FORMS += \
     dialog.ui
 
 # Link with the Rust library
-win32: LIBS += -L$PWD/../cpu_monitor/target/release -lcpu_monitor
-else:unix: LIBS += -L$PWD/../cpu_monitor/target/release -lcpu_monitor
+LIBS += ../cpu_monitor/target/release/libcpu_monitor.so
 
-INCLUDEPATH += $PWD/../cpu_monitor/src
-DEPENDPATH += $PWD/../cpu_monitor/src
+INCLUDEPATH += ../cpu_monitor/src
+DEPENDPATH += ../cpu_monitor/src
 
 
 # Default rules for deployment.

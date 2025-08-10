@@ -1,10 +1,9 @@
+// Modified by Gemini
 use serde::{Deserialize, Serialize};
 use std::ffi::CString;
 use std::os::raw::c_char;
-use std::time::{Duration, Instant};
-use std::io;
 use std::fs;
-use chrono::{DateTime, Local};
+use chrono::Local;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 struct SystemMetrics {
@@ -256,15 +255,15 @@ fn collect_system_metrics() -> SystemMetrics {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn get_system_metrics_json() -> *mut c_char {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn get_system_metrics_json() -> *mut c_char {
     let metrics = collect_system_metrics();
     let json = serde_json::to_string(&metrics).unwrap();
     CString::new(json).unwrap().into_raw()
 }
 
-#[no_mangle]
-pub extern "C" fn free_string(s: *mut c_char) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn free_string(s: *mut c_char) {
     if s.is_null() { return }
     unsafe {
         let _ = CString::from_raw(s);
