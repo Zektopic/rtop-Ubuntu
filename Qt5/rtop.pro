@@ -13,10 +13,19 @@ SOURCES += \
     dialog.cpp
 
 HEADERS += \
-    dialog.h
+    dialog.h \
+    rtop_rust.h
 
 FORMS += \
     dialog.ui
+
+# Link with the Rust library
+win32: LIBS += -L$PWD/../cpu_monitor/target/release -lcpu_monitor
+else:unix: LIBS += -L$PWD/../cpu_monitor/target/release -lcpu_monitor
+
+INCLUDEPATH += $PWD/../cpu_monitor/src
+DEPENDPATH += $PWD/../cpu_monitor/src
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
