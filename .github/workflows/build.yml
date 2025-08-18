@@ -16,7 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
       with:
@@ -31,7 +30,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y qt5-default
+        sudo apt-get install -y qtbase5-dev qt5-qmake qtchooser qtbase5-dev-tools
 
     - name: Set up Qt for macOS
       if: matrix.os == 'macos-latest'
