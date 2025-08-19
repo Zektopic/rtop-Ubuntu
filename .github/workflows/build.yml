@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]  # Only Linux build remains
 
     steps:
     - uses: actions/checkout@v4
@@ -28,55 +28,23 @@ jobs:
         cargo build --release
 
     - name: Set up Qt for Linux
-      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y qtbase5-dev qt5-qmake qtchooser qtbase5-dev-tools
 
-    - name: Set up Qt for macOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install qt5
-        echo "$(brew --prefix qt5)/bin" >> $GITHUB_PATH
-
-    - name: Set up Qt for Windows
-      if: matrix.os == 'windows-latest'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW64
-        update: true
-        install: >-
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-qt5
-
-    - name: Build rtop on Linux/macOS
-      if: matrix.os != 'windows-latest'
+    - name: Build rtop
       run: |
         cd Qt5
         qmake
         make
       shell: bash
 
-    - name: Build rtop on Windows
-      if: matrix.os == 'windows-latest'
-      run: |
-        cd Qt5
-        qmake
-        mingw32-make
-      shell: msys2 {0}
-
     - name: Package binaries
       run: |
         mkdir -p release
-        if [ "${{ matrix.os }}" == "windows-latest" ]; then
-          cp Qt5/release/rtop.exe release/
-          cp cpu_monitor/target/release/cpu_monitor.exe release/
-          7z a -tzip rtop-${{ matrix.os }}.zip ./release/*
-        else
-          cp Qt5/rtop release/
-          cp cpu_monitor/target/release/cpu_monitor release/
-          tar -czvf rtop-${{ matrix.os }}.tar.gz ./release/*
-        fi
+        cp Qt5/rtop release/
+        cp cpu_monitor/target/release/cpu_monitor release/
+        tar -czvf rtop-${{ matrix.os }}.tar.gz ./release/*
       shell: bash
 
     - name: Upload artifact
