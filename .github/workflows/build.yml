@@ -1,5 +1,8 @@
 name: Build and Release
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main ]
@@ -15,12 +18,10 @@ jobs:
         os: [ubuntu-latest]  # Only Linux build remains
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
+      uses: dtolnay/rust-toolchain@stable
 
     - name: Build cpu_monitor
       run: |
@@ -48,7 +49,7 @@ jobs:
       shell: bash
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: rtop-${{ matrix.os }}
         path: rtop-${{ matrix.os }}.*
@@ -56,10 +57,12 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
@@ -69,12 +72,12 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.get_tag.outputs.TAG }}
-          release_name: Release ${{ steps.get_tag.outputs.TAG }}
+          name: Release ${{ steps.get_tag.outputs.TAG }}
           draft: false
           prerelease: false
 
@@ -84,9 +87,9 @@ jobs:
             if [ -d "$dir" ]; then
               asset_path=$(find "$dir" -name "rtop-*.tar.gz" -o -name "rtop-*.zip")
               asset_name=$(basename "$asset_path" | sed 's/-[a-z]*-latest//')
-              gh release upload ${{ steps.get_tag.outputs.TAG }} "$asset_path" --clobber
+              gh release upload "$TAG" "$asset_path" --clobber
             fi
           done
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.get_tag.outputs.TAG }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
